@@ -73,15 +73,40 @@ bool isQEmpty(Queue q) {
 
 // Maze functions
 void scanWalls(Maze* maze) { // fill in code for changing value of the cell walls
-    if (API::wallFront()) {
-        
-    }
-    if (API::wallRight()) {
-        
-    }
-    if (API::wallLeft()) {
-        
-    }
+  int cellWalls = 0000;
+  // get dir
+  if (API::wallFront()) {
+    if (maze->mouse_dir == NORTH)
+      cellWalls |= NORTH_MASK;
+    else if (maze->mouse_dir == EAST)
+      cellWalls |= EAST;
+    else if (maze->mouse_dir == SOUTH)
+      cellWalls |= SOUTH_MASK;
+    else
+      cellWalls |= WEST_MASK;
+  }
+  if (API::wallRight()) {
+    if (maze->mouse_dir == NORTH)
+      cellWalls |= EAST_MASK;
+    else if (maze->mouse_dir == EAST)
+      cellWalls |= SOUTH_MASK;
+    else if (maze->mouse_dir == SOUTH)
+      cellWalls |= WEST_MASK;
+    else
+      cellWalls |= NORTH_MASK;
+  }
+  if (API::wallLeft()) {
+    if (maze->mouse_dir == NORTH)
+      cellWalls |= WEST_MASK;
+    else if (maze->mouse_dir == EAST)
+      cellWalls |= NORTH_MASK;
+    else if (maze->mouse_dir == SOUTH)
+      cellWalls |= EAST_MASK;
+    else
+      cellWalls |= SOUTH_MASK;
+  }
+  
+  maze->cellWalls[maze->mouse_pos.y][maze->mouse_pos.x] = cellWalls;
 }
 
 void updateSimulator(Maze maze) { // redraws the maze in simulator after each loop in main
@@ -114,12 +139,16 @@ void updateMousePos(Coord* pos, Direction dir) {
     //depending on the mouse direction, increment position by one
     if (dir == NORTH)
         // increment in some direction
+        pos->y += 1;
     if (dir == SOUTH)
         // increment in some direction
+        pos->y -= 1;
     if (dir == WEST)
         // increment in some direction
+        pos->x -= 1;
     if (dir == EAST)
         // increment in some direction
+        pos->x += 1;
 }
 
 CellList* getNeighborCells(Maze* maze, Coord c) { //to be called in a while loop within Floodfill when setting each cell
