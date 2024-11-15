@@ -3,6 +3,8 @@
 
 #include "API.h"
 
+const int MAZE_SIZE = 16;
+
 void log(const std::string& text) {
     std::cerr << text << std::endl;
 }
@@ -87,16 +89,25 @@ void updateSimulator(Maze maze) { // redraws the maze in simulator after each lo
     {
         for(int y = 0; y < MAZE_SIZE; y++) 
         {
-            if (maze.cellWalls[y][x] & NORTH_MASK)
-                // API set walls for some direction
-            if (maze.cellWalls[y][x] & EAST_MASK)
-                // API set walls for some direction
-            if (maze.cellWalls[y][x] & SOUTH_MASK)
-                // API set walls for some direction
-            if (maze.cellWalls[y][x] & WEST_MASK)
-                // API set walls for some direction
+            if (maze.cellWalls[y][x] & NORTH_MASK) { // API set walls for some direction
+                API::setWall(x, y, dir_chars[0]);
+            }
+            if (maze.cellWalls[y][x] & EAST_MASK) {
+                API::setWall(x, y, dir_chars[1]);
+            }
+            if (maze.cellWalls[y][x] & SOUTH_MASK) {
+                API::setWall(x, y, dir_chars[2]);
+            }
+            if (maze.cellWalls[y][x] & WEST_MASK){
+                API::setWall(x, y, dir_chars[3]);
+            }
+            API::setText(x, y, std::to_string(maze.distances[x][y]));
         }
     }
+}
+
+void updateWalls(){ // put into scanWalls
+
 }
 
 void updateMousePos(Coord* pos, Direction dir) {
@@ -120,14 +131,13 @@ Cell* getBestCell(Maze*, Coord c){ // returns accessible cell with lowest distan
 }
 
 // functions to return direction after step rotation
-Direction clockwiseStep(Direction dir){
-    if (dir == NORTH){
-        return WEST;
-    }
-    return dir + 1;
+Direction clockwiseStep(Direction dir){ // turn right = dir + 3 % 4
+    dir = Direction((dir + 3) % 4);
+    return dir;
 }
-Direction counterClockwiseStep(Direction dir){
-
+Direction counterClockwiseStep(Direction dir){ // turn left = dir + 1 % 4
+    dir = Direction((dir + 1) % 4);
+    return dir;
 }
 
 void floodFill(Maze* maze, bool to_start) { // function to be called everytime you move into a new cell
