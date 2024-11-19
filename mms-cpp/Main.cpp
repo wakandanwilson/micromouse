@@ -131,10 +131,6 @@ void updateSimulator(Maze maze) { // redraws the maze in simulator after each lo
     }
 }
 
-void updateWalls(){ // put into scanWalls
-
-}
-
 void updateMousePos(Coord* pos, Direction dir) {
     //depending on the mouse direction, increment position by one
     if (dir == NORTH)
