@@ -9,19 +9,9 @@ void log(const std::string& text) {
     std::cerr << text << std::endl;
 }
 
-// direction
-char dir_chars[4] = {'n', 'e', 's', 'w'};
-
 // allows you to use bitwise OR when updating which walls are present in a cell
 // also allows you to bitwise AND
 int dir_mask[4] = {0b1000, 0b0100, 0b0010, 0b0001};
-
-enum Direction {
-    NORTH = 0,
-    EAST = 1,
-    SOUTH = 2,
-    WEST = 3
-};
 
 enum DirectionBitmask {
     NORTH_MASK = 0b1000,
@@ -30,9 +20,20 @@ enum DirectionBitmask {
     WEST_MASK  = 0b0001
 };
 
-struct Coord {
-    int x;
-    int y;
+enum Direction {
+    NORTH = 0,
+    EAST = 1,
+    SOUTH = 2,
+    WEST = 3
+};
+
+// direction
+char dir_chars[4] = {'n', 'e', 's', 'w'};
+
+// coord info [row][col]
+struct Coord { 
+    int row;
+    int col;
 };
 
 struct Cell {
@@ -106,7 +107,7 @@ void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls 
       cellWalls |= SOUTH_MASK;
   }
   
-  maze->cellWalls[maze->mouse_pos.y][maze->mouse_pos.x] = cellWalls; // directly modifies mazes attributes based on cellWalls's new values
+  maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col] = cellWalls; // directly modifies mazes attributes based on cellWalls's new values
 }
 
 void updateSimulator(Maze maze) { // redraws the maze in simulator after each loop in main
@@ -133,17 +134,44 @@ void updateSimulator(Maze maze) { // redraws the maze in simulator after each lo
 
 void updateMousePos(Coord* pos, Direction dir) { //depending on the mouse direction, increment position by one
     if (dir == NORTH) // increment in some direction
-        pos->y += 1;
+        pos->row += 1;
     if (dir == SOUTH) // increment in some direction
-        pos->y -= 1;
+        pos->row -= 1;
     if (dir == WEST) // increment in some direction
-        pos->x -= 1;
+        pos->col -= 1;
     if (dir == EAST) // increment in some direction
-        pos->x += 1;
+        pos->col += 1;
 }
 
-CellList* getNeighborCells(Maze* maze, Coord c) { //to be called in a while loop within Floodfill when setting each cell
+CellList* getNeighborCells(Maze* maze, Coord c) { //will be called in a while loop within Floodfill when setting each cell
     //differentiate between accessible cells and cells that are blocked by walls
+
+/*  //c = coord of cell getting checked
+
+    CellList* neighbors = new CellList; stores accessible neighbors of c
+    neighbors->size = 0; set current size to 0
+    neighbors->cells = new Cell[4]; max 4 neighboring cells
+
+    //get wall value of current cell
+    int currentWalls = maze->cellWalls[c.row][c.col] (gets the binary value ex: 1110)
+
+    //maze dimensions
+    int rows = MAZE_SIZE;
+    int cols = MAZE_SIZE;
+
+    //define offsets
+    int rowOffsets[4] = {1, 0, -1, 0}; //north [row+1][col], east [row][col+1], south [row-1][col], west [row][col-1]
+    int colOffsets[4] = {0, 1, 0, -1};
+        put these coords into the queue
+
+    //check each neighboring cell
+    for (int i = 0, i < 4, i++){ 0: north, 1: 
+
+    }
+
+
+*/  
+    
 };
 
 Cell* getBestCell(Maze*, Coord c){ // returns accessible cell with lowest distance from goal coords
