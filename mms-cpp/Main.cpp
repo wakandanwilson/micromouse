@@ -165,8 +165,8 @@ CellList* getNeighborCells(Maze* maze, Coord c) { //will be called in a while lo
         put these coords into the queue
 
     //check each neighboring cell
-    for (int i = 0, i < 4, i++){ 0: north, 1: 
-
+    for (int i = 0, i < 4, i++){ 0: north, 1: east, 2: south, 3: west
+        int n
     }
 
 
