@@ -71,7 +71,6 @@ bool isQEmpty(Queue q) {
 }
 
 
-
 // Maze functions
 void initializeMaze(Maze* maze){
     //set all cells to 255
@@ -92,7 +91,7 @@ void initializeMaze(Maze* maze){
 void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls value of cell
 
   int cellWalls = maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col];
-  
+
   if (API::wallFront()) {
     if (maze->mouse_dir == NORTH)
       cellWalls |= NORTH_MASK;
@@ -196,12 +195,12 @@ Cell* getBestCell(Maze*, Coord c){ // returns accessible cell with lowest distan
 }
 
 // functions to return direction after step rotation
-Direction clockwiseStep(Direction dir){ // turn right = dir + 3 % 4
-    dir = Direction((dir + 3) % 4);
+Direction clockwiseStep(Direction dir){ // turn right = dir + 1 % 4
+    dir = Direction((dir + 1) % 4);
     return dir;
 }
-Direction counterClockwiseStep(Direction dir){ // turn left = dir + 1 % 4
-    dir = Direction((dir + 1) % 4);
+Direction counterClockwiseStep(Direction dir){ // turn left = dir + 3 % 4
+    dir = Direction((dir + 3) % 4);
     return dir;
 }
 
