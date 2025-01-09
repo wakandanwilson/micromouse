@@ -4,13 +4,13 @@
 #include "API.h"
 
 const int MAZE_SIZE = 16;
+const int MAX_COST = 255;
 
 void log(const std::string& text) {
     std::cerr << text << std::endl;
 }
 
 // allows you to use bitwise OR when updating which walls are present in a cell
-// also allows you to bitwise AND
 int dir_mask[4] = {0b1000, 0b0100, 0b0010, 0b0001};
 
 enum DirectionBitmask {
@@ -57,7 +57,7 @@ struct Maze {
     Coord mouse_pos;
     Direction mouse_dir;
     int distances[16][16];
-    int cellWalls[16][16]; // 2, 2D arrays for distances of each cell, and values for cell walls
+    int cellWalls[16][16]; // 2 values, 1 for Manhattan distance of each cell, 1 for cellWalls of cell
     Coord* goalPos;
 };
 
@@ -73,14 +73,31 @@ bool isQEmpty(Queue q) {
 
 
 // Maze functions
+void initializeMaze(Maze* maze){
+    //set all cells to 255
+    for (int row = 0; row < MAZE_SIZE; row++){
+        for (int col = 0; col < MAZE_SIZE; col ++){
+            maze->distances[row][col] = MAX_COST;
+            maze->cellWalls[row][col] = 0000;
+        }
+    }
+
+    //set goal cells to 0
+    maze->distances[7][7] = 0;
+    maze->distances[7][8] = 0;
+    maze->distances[8][7] = 0;
+    maze->distances[8][8] = 0;
+}
+
 void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls value of cell
-  int cellWalls = 0000;
-  // get dir
+
+  int cellWalls = maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col];
+  
   if (API::wallFront()) {
     if (maze->mouse_dir == NORTH)
       cellWalls |= NORTH_MASK;
     else if (maze->mouse_dir == EAST)
-      cellWalls |= EAST;
+      cellWalls |= EAST_MASK;
     else if (maze->mouse_dir == SOUTH)
       cellWalls |= SOUTH_MASK;
     else
