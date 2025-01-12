@@ -159,34 +159,27 @@ void updateMousePos(Coord* pos, Direction dir) { //depending on the mouse direct
         pos->col += 1;
 }
 
-CellList* getNeighborCells(Maze* maze, Coord c) { //will be called in a while loop within Floodfill when setting each cell
+CellList* getNeighborCells(Maze* maze, Coord c) {
     //differentiate between accessible cells and cells that are blocked by walls
 
-/*  //c = coord of cell getting checked
-
-    CellList* neighbors = new CellList; stores accessible neighbors of c
-    neighbors->size = 0; set current size to 0
-    neighbors->cells = new Cell[4]; max 4 neighboring cells
+    CellList* neighbors = new CellList; // stores accessible neighbors of c
+    neighbors->size = 0; // set current size to 0
+    neighbors->cells = new Cell[4]; //max 4 neighboring cells
 
     //get wall value of current cell
-    int currentWalls = maze->cellWalls[c.row][c.col] (gets the binary value ex: 1110)
-
-    //maze dimensions
-    int rows = MAZE_SIZE;
-    int cols = MAZE_SIZE;
+    int currentWalls = maze->cellWalls[c.row][c.col];
 
     //define offsets
-    int rowOffsets[4] = {1, 0, -1, 0}; //north [row+1][col], east [row][col+1], south [row-1][col], west [row][col-1]
+    int rowOffsets[4] = {1, 0, -1, 0};
     int colOffsets[4] = {0, 1, 0, -1};
-        put these coords into the queue
 
     //check each neighboring cell
     for (int i = 0, i < 4, i++){ 0: north, 1: east, 2: south, 3: west
-        int n
+        int neighborRow = 
     }
 
 
-*/  
+
     
 };
 
