@@ -62,14 +62,41 @@ struct Maze {
 };
 
 // Queue functions
-void initQueue(Queue *q) { //initalize empty queue
-    
+void initQueue(Queue *q) {
+    q->head = 0;
+    q->tail = 0;
 }
 
 bool isQEmpty(Queue q) {
-    
+    return q.head == q.tail;
 }
 
+// Add stuff to queue
+void enqueue(Queue *q, Coord c){
+    int nextTail = (q->tail + 1) % 255; // tail index
+
+    if (nextTail == (q->head)){
+        printf("Q overflow\n");
+        return;
+    }
+    else{
+        q->queue[q->tail] = c;
+        q->tail = nextTail;
+    }
+}
+
+// Take stuff out of queue
+Coord dequeue(Queue *q){
+    if (isQEmpty(*q)){
+        printf("Q underflow\n");
+        return Coord{-1, -1}; // Return invalid Coord
+    }
+
+    Coord c = q->queue[q->head];
+    q->head = (q->head + 1) % 255;
+
+    return c;
+}
 
 // Maze functions
 void initializeMaze(Maze* maze){
@@ -151,12 +178,16 @@ void updateSimulator(Maze maze) { // redraws the maze in simulator after each lo
 void updateMousePos(Coord* pos, Direction dir) { //depending on the mouse direction, increment position by one
     if (dir == NORTH) // increment in some direction
         pos->row += 1;
-    if (dir == SOUTH) // increment in some direction
+    if (dir == SOUTH)
         pos->row -= 1;
-    if (dir == WEST) // increment in some direction
+    if (dir == WEST) 
         pos->col -= 1;
-    if (dir == EAST) // increment in some direction
+    if (dir == EAST) 
         pos->col += 1;
+}
+
+bool isInBounds(int row, int col){
+    return (row >= 0 && row < MAZE_SIZE) && (col >= 0 && col <  MAZE_SIZE);
 }
 
 CellList* getNeighborCells(Maze* maze, Coord c) {
@@ -166,21 +197,33 @@ CellList* getNeighborCells(Maze* maze, Coord c) {
     neighbors->size = 0; // set current size to 0
     neighbors->cells = new Cell[4]; //max 4 neighboring cells
 
-    //get wall value of current cell
-    int currentWalls = maze->cellWalls[c.row][c.col];
+    // Retrieve current cellWall info
+    int currentCellWalls = maze->cellWalls[c.row][c.col];
 
     //define offsets
     int rowOffsets[4] = {1, 0, -1, 0};
     int colOffsets[4] = {0, 1, 0, -1};
 
     //check each neighboring cell
-    for (int i = 0, i < 4, i++){ 0: north, 1: east, 2: south, 3: west
-        int neighborRow = 
+    for (int i = 0; i < 4; i++){ // 0: north, 1: east, 2: south, 3: west
+        int neighborRow = c.row + rowOffsets[i];
+        int neighborCol = c.col + colOffsets[i];
+        
+        // Check if neighbor is within bounds
+        if (isInBounds(neighborRow, neighborCol)){
+            // Check for walls blocking neighboring cell
+            if(!(currentCellWalls & dir_mask[i])){
+                Cell neighbor;
+                neighbor.pos = {neighborRow, neighborCol};
+                neighbor.dir = static_cast<Direction>(i); // Dir of cell relative to main cell
+                neighbor.blocked = false;
+
+                neighbors->cells[neighbors->size++] = neighbor;
+            }
+        }
     }
 
-
-
-    
+    return neighbors;
 };
 
 Cell* getBestCell(Maze*, Coord c){ // returns accessible cell with lowest distance from goal coords
