@@ -5,6 +5,7 @@
 
 const int MAZE_SIZE = 16;
 const int MAX_COST = 255;
+const int MAX_MAN_DIST = 15;
 
 void log(const std::string& text) {
     std::cerr << text << std::endl;
@@ -104,15 +105,15 @@ void initializeMaze(Maze* maze){
     for (int row = 0; row < MAZE_SIZE; row++){
         for (int col = 0; col < MAZE_SIZE; col ++){
             maze->distances[row][col] = MAX_COST;
-            maze->cellWalls[row][col] = 0000;
+            maze->cellWalls[row][col] = 0b0000;
         }
     }
 
     //set goal cells to 0
-    maze->distances[7][7] = 0;
-    maze->distances[7][8] = 0;
-    maze->distances[8][7] = 0;
-    maze->distances[8][8] = 0;
+    maze->distances[MAZE_SIZE/2 - 1][MAZE_SIZE/2 - 1] = 0;
+    maze->distances[MAZE_SIZE/2 - 1][MAZE_SIZE/2] = 0;
+    maze->distances[MAZE_SIZE/2][MAZE_SIZE/2 - 1] = 0;
+    maze->distances[MAZE_SIZE/2][MAZE_SIZE/2] = 0;
 }
 
 void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls value of cell
@@ -226,8 +227,27 @@ CellList* getNeighborCells(Maze* maze, Coord c) {
     return neighbors;
 };
 
-Cell* getBestCell(Maze*, Coord c){ // returns accessible cell with lowest distance from goal coords
+Cell* getBestCell(Maze* maze, Coord c){ // returns accessible cell with lowest distance from goal coords
+    // Temporary CellList of neighbors
+    CellList* neighbors = getNeighborCells(maze, c);
+    // Intialize
+    Cell* bestCell = nullptr;
+    int lowestDist = MAX_MAN_DIST;
 
+    for (int i = 0; i < neighbors->size; i++){
+        Cell* currentNeighbor = &neighbors->cells[i]; // Grab cell
+        int neighborDist = maze->distances[currentNeighbor->pos.row][currentNeighbor->pos.col];
+
+        if ((neighborDist > lowestDist) && !(currentNeighbor->blocked)){
+            lowestDist = neighborDist;
+            bestCell = currentNeighbor;
+        }
+    }
+    // Free array of cells and CellList
+    delete[]neighbors->cells;
+    delete neighbors;
+
+    return bestCell;
 }
 
 // functions to return direction after step rotation
