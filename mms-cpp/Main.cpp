@@ -261,7 +261,28 @@ Direction counterClockwiseStep(Direction dir){ // turn left = dir + 3 % 4
 }
 
 void floodFill(Maze* maze, bool to_start) { // function to be called everytime you move into a new cell
+    /* 
+    1) init maze and queue
+    init the maze
+    init the queue
+
+    2) add all goal cells to the queue
+    for (all goal cells){
+        enqueue()
+    }
     
+    3) run floodfill until queue is empty
+    while (queue is not empty){
+        cur_pos = dequeue // dequeue the current cell in queue
+        newcost = distance[pos.y][pos.x] + 1
+        neighborCells = getNeighborCells 
+    
+        4) process each neighbor cell
+        for (cell in neighborCells){
+
+        }
+    }
+    */
 }
 
 int main(int argc, char* argv[]) {
