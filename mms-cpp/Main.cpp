@@ -19,7 +19,6 @@ void initQueue(Queue *q) {
 bool isQEmpty(Queue q) {
     return q.head == q.tail;
 }
-
 // Add stuff to queue
 void enqueue(Queue *q, Coord c){
     int nextTail = (q->tail + 1) % 255; // tail index
@@ -33,7 +32,6 @@ void enqueue(Queue *q, Coord c){
         q->tail = nextTail;
     }
 }
-
 // Take stuff out of queue
 Coord dequeue(Queue *q){
     if (isQEmpty(*q)){
@@ -66,43 +64,99 @@ void initializeMaze(Maze* maze){
 
 void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls value of cell
 
-  int cellWalls = maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col];
+    int cellWalls = maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col];
+    int row = maze->mouse_pos.row;
+    int col = maze->mouse_pos.col;
 
-  if (API::wallFront()) {
-    if (maze->mouse_dir == NORTH)
-      cellWalls |= NORTH_MASK;
-    else if (maze->mouse_dir == EAST)
-      cellWalls |= EAST_MASK;
-    else if (maze->mouse_dir == SOUTH)
-      cellWalls |= SOUTH_MASK;
-    else
-      cellWalls |= WEST_MASK;
-  }
-  if (API::wallRight()) {
-    if (maze->mouse_dir == NORTH)
-      cellWalls |= EAST_MASK;
-    else if (maze->mouse_dir == EAST)
-      cellWalls |= SOUTH_MASK;
-    else if (maze->mouse_dir == SOUTH)
-      cellWalls |= WEST_MASK;
-    else
-      cellWalls |= NORTH_MASK;
-  }
-  if (API::wallLeft()) {
-    if (maze->mouse_dir == NORTH)
-      cellWalls |= WEST_MASK;
-    else if (maze->mouse_dir == EAST)
-      cellWalls |= NORTH_MASK;
-    else if (maze->mouse_dir == SOUTH)
-      cellWalls |= EAST_MASK;
-    else
-      cellWalls |= SOUTH_MASK;
-  }
+    if (API::wallFront()) {
+        log("front");
+        if (maze->mouse_dir == NORTH){
+            cellWalls |= NORTH_MASK;
+            if (row + 1 < MAZE_SIZE){
+                maze->cellWalls[row + 1][col] |= SOUTH_MASK;
+            }
+        }
+        else if (maze->mouse_dir == EAST){
+            cellWalls |= EAST_MASK;
+            if (col + 1 < MAZE_SIZE){
+                maze->cellWalls[row][col+1] |= WEST_MASK;
+            }
+        }
+        else if (maze->mouse_dir == SOUTH){
+            cellWalls |= SOUTH_MASK;
+            if (row - 1 >= 0){
+                maze->cellWalls[row-1][col] |= NORTH_MASK;
+            }
+        }
+        else{
+            cellWalls |= WEST_MASK;
+            if (col - 1 >= 0){
+                maze->cellWalls[row][col-1] |= EAST_MASK;
+            }
+        }
+    }   
+
+    if (API::wallRight()) {
+        log("right");
+        if (maze->mouse_dir == NORTH){
+            cellWalls |= EAST_MASK;
+            if (col + 1 < MAZE_SIZE){
+                maze->cellWalls[row][col + 1] |= WEST_MASK;
+            }
+        }
+        else if (maze->mouse_dir == EAST){
+            cellWalls |= SOUTH_MASK;
+            if (row - 1 >= 0){
+                maze->cellWalls[row - 1][col] |= NORTH_MASK;
+            }
+        }
+        else if (maze->mouse_dir == SOUTH){
+            cellWalls |= WEST_MASK;
+            if (col - 1 >= 0){
+                maze->cellWalls[row][col - 1] |= EAST_MASK;
+            }
+        }
+        else{
+            cellWalls |= NORTH_MASK;
+            if (row + 1 < MAZE_SIZE) {
+                maze->cellWalls[row + 1][col] |= SOUTH_MASK;
+            }
+        }
+    }
+    if (API::wallLeft()) {
+        log("left");
+        if (maze->mouse_dir == NORTH){
+            cellWalls |= WEST_MASK;
+            if (col - 1 >= 0){
+                maze->cellWalls[row][col - 1] |= EAST_MASK;
+            }
+        }
+        else if (maze->mouse_dir == EAST){
+            cellWalls |= NORTH_MASK;
+            if (row + 1 < MAZE_SIZE){
+                maze->cellWalls[row + 1][col] |= SOUTH_MASK;
+            }
+        }
+        else if (maze->mouse_dir == SOUTH){
+            cellWalls |= EAST_MASK;
+            if (col + 1 < MAZE_SIZE){
+                maze->cellWalls[row][col + 1] |= WEST_MASK;
+            }
+        }
+        else{
+            cellWalls |= SOUTH_MASK;
+            if (row - 1 >= 0){
+                maze->cellWalls[row - 1][col] |= NORTH_MASK;
+            }
+        }
+    }
+
   
-  maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col] = cellWalls; // directly modifies mazes attributes based on cellWalls's new values
+    maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col] = cellWalls; // directly modifies mazes attributes based on cellWalls's new values
+    std::cerr << "Cell at (" << row << "," << col << ") has walls: " << maze->cellWalls[row][col] << std::endl;
 }
 
-void updateSimulator(const Maze &maze) { // redraws the maze in simulator after each loop in main
+void updateSimulator(const Maze &maze) {// redraws the maze in simulator after each loop in main
     for (int row = 0; row < MAZE_SIZE; row++) {
         for (int col = 0; col < MAZE_SIZE; col++) {
             // Check each wall using the correct row and col
@@ -119,6 +173,8 @@ void updateSimulator(const Maze &maze) { // redraws the maze in simulator after 
                 API::setWall(col, row, dir_chars[3]);
             }
             // Use row for y and col for x when displaying distances
+            //std::cerr << maze.mouse_pos.row << std::endl;
+            //std::cerr << maze.mouse_pos.col << std::endl;
             API::setText(col, row, std::to_string(maze.distances[row][col]));
         }
     }
@@ -128,15 +184,20 @@ void updateMousePos(Coord* pos, Direction dir) { //depending on the mouse direct
     switch (dir){
         case NORTH:
             pos->row++;
+            break;
         case SOUTH:
             pos->row--;
+            break;
         case WEST:
             pos->col--;
+            break;
         case EAST:
             pos->col++;
+            break;
     }
 }
 
+/* FloodFill helper functions */
 CellList* getNeighborCells(Maze* maze, Coord c) {
     //differentiate between accessible cells and cells that are blocked by walls
 
@@ -178,13 +239,13 @@ Cell* getBestCell(Maze* maze, Coord c){ // returns accessible cell with lowest d
     CellList* neighbors = getNeighborCells(maze, c);
     // Intialize
     Cell* bestCell = nullptr;
-    int lowestDist = MAX_MAN_DIST;
+    int lowestDist = MAX_COST;
 
     for (int i = 0; i < neighbors->size; i++){
         Cell* currentNeighbor = &neighbors->cells[i]; // Grab cell
         int neighborDist = maze->distances[currentNeighbor->pos.row][currentNeighbor->pos.col];
 
-        if ((neighborDist > lowestDist) && !(currentNeighbor->blocked)){
+        if ((neighborDist < lowestDist) && !(currentNeighbor->blocked)){
             lowestDist = neighborDist;
             bestCell = currentNeighbor;
         }
@@ -207,6 +268,7 @@ Direction counterClockwiseStep(Direction dir){ // turn left = dir + 3 % 4
     return dir;
 }
 
+/* FloodFill */
 void floodFill(Maze* maze) { // function to be called everytime you move into a new cell
     // initialize queue and goal cells
     Queue q;
@@ -216,12 +278,15 @@ void floodFill(Maze* maze) { // function to be called everytime you move into a 
             maze->distances[row][col] = MAX_COST;
         }
     }
-    for (int row = MAZE_SIZE/2 - 1; row < MAZE_SIZE/2; row++){
-        for (int col = MAZE_SIZE/2 - 1; col < MAZE_SIZE/2; col++){
-            maze->distances[row][col] = 0;
-            enqueue(&q, {row, col});
-        }
-    }
+
+    maze->distances[MAZE_SIZE/2 - 1][MAZE_SIZE/2 - 1] = 0;
+    enqueue(&q, {MAZE_SIZE/2 - 1, MAZE_SIZE/2 - 1});
+    maze->distances[MAZE_SIZE/2 - 1][MAZE_SIZE/2] = 0;
+    enqueue(&q, {MAZE_SIZE/2 - 1, MAZE_SIZE/2});
+    maze->distances[MAZE_SIZE/2][MAZE_SIZE/2 - 1] = 0;
+    enqueue(&q, {MAZE_SIZE/2, MAZE_SIZE/2 - 1});
+    maze->distances[MAZE_SIZE/2][MAZE_SIZE/2] = 0;
+    enqueue(&q, {MAZE_SIZE/2, MAZE_SIZE/2});
 
     while(!isQEmpty(q)){
         Coord current = dequeue(&q);
@@ -261,6 +326,63 @@ int main(int argc, char* argv[]) {
         scanWalls(&maze);
         floodFill(&maze);
         updateSimulator(maze);
+
+        Cell* bestCell = getBestCell(&maze, maze.mouse_pos);
+
+        if (bestCell->dir == 0){ // north
+            if (maze.mouse_dir == NORTH){
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+            else if (maze.mouse_dir == EAST){
+                API::turnLeft();
+                maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+            else if (maze.mouse_dir == SOUTH){
+                API::turnRight();
+                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+                API::turnRight();
+                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+            else{
+                API::turnRight();
+                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+        }
+        else if (bestCell->dir == 1){
+            if (maze.mouse_dir == NORTH){
+                API::turnRight();
+                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+            else if (maze.mouse_dir == EAST){
+                API::turnLeft();
+                maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+            else if (maze.mouse_dir == SOUTH){
+                API::turnRight();
+                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+                API::turnRight();
+                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+            else{
+                API::turnRight();
+                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+                API::moveForward();
+                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+            }
+        }
         
         if (!API::wallLeft()) {
             API::turnLeft();
@@ -272,6 +394,7 @@ int main(int argc, char* argv[]) {
         }
         API::moveForward();
         updateMousePos(&maze.mouse_pos, maze.mouse_dir);
+        
     }
     return 0;
 }
