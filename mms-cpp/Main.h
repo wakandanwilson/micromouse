@@ -28,5 +28,7 @@ Direction clockwiseStep(Direction dir);
 
 Direction counterClockwiseStep(Direction dir);
 
+void moveInDirection(Maze &maze, int targetDir);
+
 void floodFill(Maze* maze);
 #endif

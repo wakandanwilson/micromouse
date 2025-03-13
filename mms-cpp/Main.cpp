@@ -69,7 +69,6 @@ void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls 
     int col = maze->mouse_pos.col;
 
     if (API::wallFront()) {
-        log("front");
         if (maze->mouse_dir == NORTH){
             cellWalls |= NORTH_MASK;
             if (row + 1 < MAZE_SIZE){
@@ -97,7 +96,6 @@ void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls 
     }   
 
     if (API::wallRight()) {
-        log("right");
         if (maze->mouse_dir == NORTH){
             cellWalls |= EAST_MASK;
             if (col + 1 < MAZE_SIZE){
@@ -124,7 +122,6 @@ void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls 
         }
     }
     if (API::wallLeft()) {
-        log("left");
         if (maze->mouse_dir == NORTH){
             cellWalls |= WEST_MASK;
             if (col - 1 >= 0){
@@ -153,7 +150,6 @@ void scanWalls(Maze* maze) { // scan walls in current cell and change cellWalls 
 
   
     maze->cellWalls[maze->mouse_pos.row][maze->mouse_pos.col] = cellWalls; // directly modifies mazes attributes based on cellWalls's new values
-    std::cerr << "Cell at (" << row << "," << col << ") has walls: " << maze->cellWalls[row][col] << std::endl;
 }
 
 void updateSimulator(const Maze &maze) {// redraws the maze in simulator after each loop in main
@@ -257,7 +253,7 @@ Cell* getBestCell(Maze* maze, Coord c){ // returns accessible cell with lowest d
     return bestCell;
 }
 
-/* Step functions */
+/* Step/move functions */
 Direction clockwiseStep(Direction dir){ // turn right = dir + 1 % 4
     dir = Direction((dir + 1) % 4);
     return dir;
@@ -266,6 +262,33 @@ Direction clockwiseStep(Direction dir){ // turn right = dir + 1 % 4
 Direction counterClockwiseStep(Direction dir){ // turn left = dir + 3 % 4
     dir = Direction((dir + 3) % 4);
     return dir;
+}
+
+void moveInDirection(Maze &maze, int targetDir){
+    int dir_diff = (targetDir - maze.mouse_dir + 4) % 4;
+    switch (dir_diff){
+        case 0: // bestCell is in front
+            API::moveForward();
+            break;
+        case 1: // right
+            API::turnRight();
+            maze.mouse_dir = clockwiseStep(maze.mouse_dir);
+            API::moveForward();
+            break;
+        case 2: // behind
+            API::turnLeft();
+            maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
+            API::turnLeft();
+            maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
+            API::moveForward();
+            break;
+        case 3: // left
+            API::turnLeft();
+            maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
+            API::moveForward();
+            break;
+    }
+    updateMousePos(&maze.mouse_pos, maze.mouse_dir);
 }
 
 /* FloodFill */
@@ -328,73 +351,7 @@ int main(int argc, char* argv[]) {
         updateSimulator(maze);
 
         Cell* bestCell = getBestCell(&maze, maze.mouse_pos);
-
-        if (bestCell->dir == 0){ // north
-            if (maze.mouse_dir == NORTH){
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-            else if (maze.mouse_dir == EAST){
-                API::turnLeft();
-                maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-            else if (maze.mouse_dir == SOUTH){
-                API::turnRight();
-                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-                API::turnRight();
-                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-            else{
-                API::turnRight();
-                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-        }
-        else if (bestCell->dir == 1){
-            if (maze.mouse_dir == NORTH){
-                API::turnRight();
-                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-            else if (maze.mouse_dir == EAST){
-                API::turnLeft();
-                maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-            else if (maze.mouse_dir == SOUTH){
-                API::turnRight();
-                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-                API::turnRight();
-                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-            else{
-                API::turnRight();
-                maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-                API::moveForward();
-                updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-            }
-        }
-        
-        if (!API::wallLeft()) {
-            API::turnLeft();
-            maze.mouse_dir = counterClockwiseStep(maze.mouse_dir);
-        }
-        while (API::wallFront()) {
-            API::turnRight();
-            maze.mouse_dir = clockwiseStep(maze.mouse_dir);
-        }
-        API::moveForward();
-        updateMousePos(&maze.mouse_pos, maze.mouse_dir);
-        
+        moveInDirection(maze, bestCell->dir);
     }
     return 0;
 }
